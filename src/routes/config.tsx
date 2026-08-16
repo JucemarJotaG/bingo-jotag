@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ImagePlus, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, ImagePlus, Plus, Trash2, Upload } from "lucide-react";
 import { AdSlide } from "@/components/AdRotator";
-import { useSettings } from "@/hooks/useBingoStore";
-import { defaultSettings, uid, type Ad, type AdLayout, type BallRange, type BoardLayout, type DrawMode } from "@/lib/bingo";
+import { useGame, useSettings } from "@/hooks/useBingoStore";
+import { defaultSettings, uid, type Ad, type AdLayout, type BallRange, type BoardLayout, type DrawMode, type GameState, type Settings } from "@/lib/bingo";
 
 export const Route = createFileRoute("/config")({
   head: () => ({
@@ -34,6 +34,33 @@ function readFile(file: File): Promise<string> {
 
 function Config() {
   const { settings, setSettings } = useSettings();
+  const { game, setGame } = useGame();
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify({ settings, game }, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bingo-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try {
+      const data = JSON.parse(await f.text()) as { settings?: Settings; game?: GameState };
+      if (data.settings) setSettings({ ...defaultSettings, ...data.settings });
+      if (data.game) setGame({ ...game, ...data.game });
+      alert("Backup restaurado com sucesso!");
+    } catch {
+      alert("Arquivo inválido.");
+    }
+    e.target.value = "";
+  };
 
   const patchAd = (id: string, patch: Partial<Ad>) =>
     setSettings((s) => ({ ...s, ads: s.ads.map((a) => (a.id === id ? { ...a, ...patch } : a)) }));
@@ -271,6 +298,40 @@ function Config() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="panel space-y-3 p-5">
+        <h2 className="text-2xl text-primary">Backup e uso offline</h2>
+        <p className="text-sm text-muted-foreground">
+          Baixe um arquivo <b>.json</b> com todas as configurações, anúncios, cartelas vendidas e
+          bolas já sorteadas. Guarde no pen drive ou no celular e restaure em qualquer aparelho —
+          tudo funciona sem internet.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={exportBackup} className="btn-main">
+            <Download className="size-4" /> Baixar arquivo do bingo
+          </button>
+          <label className="btn-ghost cursor-pointer">
+            <Upload className="size-4" /> Restaurar de um arquivo
+            <input type="file" accept="application/json" onChange={importBackup} className="hidden" />
+          </label>
+        </div>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <li>
+            <b>Instalar no Windows:</b> abra o app no Chrome/Edge e clique no ícone de instalar na
+            barra de endereço. Ele vira um programa e abre mesmo sem internet.
+          </li>
+          <li>
+            <b>Instalar no celular:</b> menu do navegador → “Adicionar à tela inicial”.
+          </li>
+          <li>
+            <b>Telão/datashow:</b> abra o telão e use o botão de tela cheia (canto superior).
+          </li>
+          <li>
+            <b>Antes do evento:</b> baixe o arquivo de backup; se o aparelho falhar, restaure em
+            outro em segundos.
+          </li>
+        </ol>
       </section>
 
       <section className="panel flex flex-wrap items-center justify-between gap-3 p-5">
