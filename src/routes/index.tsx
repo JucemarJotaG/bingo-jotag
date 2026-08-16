@@ -129,9 +129,15 @@ function Telao() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={draw} className="btn-main">
-            <Play className="size-5" /> Sortear <span className="opacity-60">(espaço)</span>
-          </button>
+          {manual ? (
+            <span className="btn-ghost">
+              <MousePointerClick className="size-4" /> Sorteio externo: clique no número
+            </span>
+          ) : (
+            <button onClick={draw} className="btn-main">
+              <Play className="size-5" /> Sortear <span className="opacity-60">(espaço)</span>
+            </button>
+          )}
           <button
             onClick={() => setGame((g) => ({ ...g, drawn: [], startedAt: Date.now() }))}
             className="btn-ghost"
