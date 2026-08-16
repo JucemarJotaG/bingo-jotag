@@ -78,7 +78,9 @@ function Config() {
               accept="image/*"
               onChange={async (e) => {
                 const f = e.target.files?.[0];
-                if (f) setSettings((s) => ({ ...s, logoDataUrl: await readFile(f) }));
+                if (!f) return;
+                const dataUrl = await readFile(f);
+                setSettings((s) => ({ ...s, logoDataUrl: dataUrl }));
               }}
               className="field w-full text-sm"
             />
