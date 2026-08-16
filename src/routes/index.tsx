@@ -99,6 +99,19 @@ function Telao() {
     };
   }, [game.cards, drawn]);
 
+  const manual = settings.drawMode === "externo";
+
+  const toggle = useCallback(
+    (n: number) => {
+      if (!manual) return;
+      setGame((g) =>
+        g.drawn.includes(n) ? { ...g, drawn: g.drawn.filter((x) => x !== n) } : { ...g, drawn: [...g.drawn, n] },
+      );
+      if (!drawnSet.has(n)) speak(n);
+    },
+    [manual, setGame, drawnSet, speak],
+  );
+
   return (
     <div className="flex min-h-screen flex-col gap-3 p-3 lg:p-5">
       <header className="panel flex flex-wrap items-center justify-between gap-4 px-5 py-3">
