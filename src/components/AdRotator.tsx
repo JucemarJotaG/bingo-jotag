@@ -69,8 +69,8 @@ export function AdRotator({
     return () => clearTimeout(t);
   }, [i, active, autoplay]);
 
-  if (active.length === 0) return null;
   const ad = active[i % active.length];
+  if (!ad) return null;
 
   return (
     <div className="panel relative h-full w-full overflow-hidden">
