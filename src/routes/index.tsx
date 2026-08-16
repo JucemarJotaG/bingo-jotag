@@ -174,14 +174,23 @@ function Telao() {
             {last ? (
               <div
                 key={last + "-" + drawn.length}
-                className="ball-gold animate-ball-in flex size-52 flex-col items-center justify-center rounded-full lg:size-64"
+                className="ball-gold animate-ball-in flex flex-col items-center justify-center rounded-full"
+                style={{ width: `${18 * settings.ballScale}rem`, height: `${18 * settings.ballScale}rem` }}
               >
                 {settings.range === 75 && (
-                  <span className="font-display text-3xl opacity-70">
+                  <span
+                    className="font-display leading-none opacity-80"
+                    style={{ fontSize: `${5 * settings.ballScale}rem` }}
+                  >
                     {letterFor(last, settings.range)}
                   </span>
                 )}
-                <span className="font-display text-8xl leading-none lg:text-9xl">{last}</span>
+                <span
+                  className="font-display leading-none"
+                  style={{ fontSize: `${8 * settings.ballScale}rem` }}
+                >
+                  {last}
+                </span>
               </div>
             ) : (
               <div className="flex size-52 items-center justify-center rounded-full border-4 border-dashed border-border text-center text-muted-foreground lg:size-64">
