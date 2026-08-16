@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Maximize2,
   Minimize2,
+  MousePointerClick,
   Play,
   RotateCcw,
   Settings as SettingsIcon,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { AdRotator } from "@/components/AdRotator";
 import { useGame, useSettings } from "@/hooks/useBingoStore";
-import { emptyGame, letterFor, statusOf } from "@/lib/bingo";
+import { emptyGame, letterFor, statusOf, type BoardLayout } from "@/lib/bingo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,13 +59,14 @@ function Telao() {
   );
 
   const draw = useCallback(() => {
+    if (settings.drawMode === "externo") return;
     const remaining: number[] = [];
     for (let n = 1; n <= total; n++) if (!drawnSet.has(n)) remaining.push(n);
     if (remaining.length === 0) return;
     const n = remaining[Math.floor(Math.random() * remaining.length)]!;
     setGame((g) => ({ ...g, drawn: [...g.drawn, n] }));
     speak(n);
-  }, [total, drawnSet, setGame, speak]);
+  }, [total, drawnSet, setGame, speak, settings.drawMode]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -99,6 +101,19 @@ function Telao() {
     };
   }, [game.cards, drawn]);
 
+  const manual = settings.drawMode === "externo";
+
+  const toggle = useCallback(
+    (n: number) => {
+      if (!manual) return;
+      setGame((g) =>
+        g.drawn.includes(n) ? { ...g, drawn: g.drawn.filter((x) => x !== n) } : { ...g, drawn: [...g.drawn, n] },
+      );
+      if (!drawnSet.has(n)) speak(n);
+    },
+    [manual, setGame, drawnSet, speak],
+  );
+
   return (
     <div className="flex min-h-screen flex-col gap-3 p-3 lg:p-5">
       <header className="panel flex flex-wrap items-center justify-between gap-4 px-5 py-3">
@@ -116,9 +131,15 @@ function Telao() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={draw} className="btn-main">
-            <Play className="size-5" /> Sortear <span className="opacity-60">(espaço)</span>
-          </button>
+          {manual ? (
+            <span className="btn-ghost">
+              <MousePointerClick className="size-4" /> Sorteio externo: clique no número
+            </span>
+          ) : (
+            <button onClick={draw} className="btn-main">
+              <Play className="size-5" /> Sortear <span className="opacity-60">(espaço)</span>
+            </button>
+          )}
           <button
             onClick={() => setGame((g) => ({ ...g, drawn: [], startedAt: Date.now() }))}
             className="btn-ghost"
@@ -154,14 +175,23 @@ function Telao() {
             {last ? (
               <div
                 key={last + "-" + drawn.length}
-                className="ball-gold animate-ball-in flex size-52 flex-col items-center justify-center rounded-full lg:size-64"
+                className="ball-gold animate-ball-in flex flex-col items-center justify-center rounded-full"
+                style={{ width: `${18 * settings.ballScale}rem`, height: `${18 * settings.ballScale}rem` }}
               >
                 {settings.range === 75 && (
-                  <span className="font-display text-3xl opacity-70">
+                  <span
+                    className="font-display leading-none opacity-80"
+                    style={{ fontSize: `${5 * settings.ballScale}rem` }}
+                  >
                     {letterFor(last, settings.range)}
                   </span>
                 )}
-                <span className="font-display text-8xl leading-none lg:text-9xl">{last}</span>
+                <span
+                  className="font-display leading-none"
+                  style={{ fontSize: `${8 * settings.ballScale}rem` }}
+                >
+                  {last}
+                </span>
               </div>
             ) : (
               <div className="flex size-52 items-center justify-center rounded-full border-4 border-dashed border-border text-center text-muted-foreground lg:size-64">
@@ -234,26 +264,19 @@ function Telao() {
         </section>
 
         <section className="panel p-4">
-          <div
-            className="grid gap-1.5"
-            style={{ gridTemplateColumns: `repeat(${settings.range === 75 ? 15 : 10}, minmax(0,1fr))` }}
-          >
-            {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
-              const hit = drawnSet.has(n);
-              return (
-                <div
-                  key={n}
-                  className={`font-display flex aspect-square items-center justify-center rounded-lg text-2xl transition-all lg:text-4xl ${
-                    hit
-                      ? "ball-gold scale-105"
-                      : "bg-secondary/60 text-muted-foreground/70"
-                  } ${n === last ? "ring-4 ring-accent" : ""}`}
-                >
-                  {n}
-                </div>
-              );
-            })}
-          </div>
+          <Board
+            range={settings.range}
+            layout={settings.boardLayout}
+            drawnSet={drawnSet}
+            last={last}
+            manual={manual}
+            onToggle={toggle}
+          />
+          {manual && (
+            <p className="mt-3 text-center text-sm text-muted-foreground">
+              Clique no número sorteado externamente para marcá-lo. Clique de novo para desfazer.
+            </p>
+          )}
         </section>
       </main>
 
@@ -282,6 +305,96 @@ function Stat({
     <div className={`rounded-xl px-3 py-2 ${tones[tone]}`}>
       <p className="font-display text-4xl leading-none">{value}</p>
       <p className="text-xs opacity-80">{label}</p>
+    </div>
+  );
+}
+
+const LETTERS = ["B", "I", "N", "G", "O"] as const;
+
+function Board({
+  range,
+  layout,
+  drawnSet,
+  last,
+  manual,
+  onToggle,
+}: {
+  range: 75 | 90;
+  layout: BoardLayout;
+  drawnSet: Set<number>;
+  last?: number | undefined;
+  manual: boolean;
+  onToggle: (n: number) => void;
+}) {
+  const cell = (n: number) => {
+    const hit = drawnSet.has(n);
+    return (
+      <button
+        key={n}
+        type="button"
+        onClick={() => onToggle(n)}
+        disabled={!manual}
+        className={`font-display flex aspect-square w-full items-center justify-center rounded-lg text-2xl transition-all lg:text-4xl ${
+          hit ? "ball-gold scale-105" : "bg-secondary/60 text-muted-foreground/70"
+        } ${n === last ? "ring-4 ring-accent" : ""} ${manual ? "cursor-pointer hover:brightness-125" : "cursor-default"}`}
+      >
+        {n}
+      </button>
+    );
+  };
+
+  if (layout === "cartela") {
+    const rows =
+      range === 75
+        ? LETTERS.map((l, i) => ({
+            label: l,
+            nums: Array.from({ length: 15 }, (_, k) => i * 15 + k + 1),
+          }))
+        : Array.from({ length: 9 }, (_, i) => ({
+            label: `${i * 10 + 1}`,
+            nums: Array.from({ length: 10 }, (_, k) => i * 10 + k + 1),
+          }));
+    return (
+      <div className="flex flex-col gap-1.5">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center gap-1.5">
+            <div className="font-display flex aspect-square w-[6%] min-w-10 items-center justify-center rounded-lg bg-primary text-3xl text-primary-foreground lg:text-5xl">
+              {row.label}
+            </div>
+            <div
+              className="grid flex-1 gap-1.5"
+              style={{ gridTemplateColumns: `repeat(${row.nums.length}, minmax(0,1fr))` }}
+            >
+              {row.nums.map(cell)}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (layout === "faixas") {
+    const per = 10;
+    const rows = Math.ceil(range / per);
+    return (
+      <div className="flex flex-col gap-1.5">
+        {Array.from({ length: rows }, (_, r) => (
+          <div key={r} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${per}, minmax(0,1fr))` }}>
+            {Array.from({ length: per }, (_, k) => r * per + k + 1)
+              .filter((n) => n <= range)
+              .map(cell)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="grid gap-1.5"
+      style={{ gridTemplateColumns: `repeat(${range === 75 ? 15 : 10}, minmax(0,1fr))` }}
+    >
+      {Array.from({ length: range }, (_, i) => i + 1).map(cell)}
     </div>
   );
 }
