@@ -12,6 +12,9 @@ export interface Ad {
   enabled: boolean;
 }
 
+export type BoardLayout = "cartela" | "grade" | "faixas";
+export type DrawMode = "app" | "externo";
+
 export interface Settings {
   bingoName: string;
   subtitle: string;
@@ -22,6 +25,9 @@ export interface Settings {
   showAdOnDraw: boolean;
   ads: Ad[];
   footer: string;
+  boardLayout: BoardLayout;
+  drawMode: DrawMode;
+  ballScale: number; // 0.7 - 1.6
 }
 
 export interface Card {
