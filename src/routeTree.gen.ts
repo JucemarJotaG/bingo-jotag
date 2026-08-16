@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CartelasRouteImport } from './routes/cartelas'
+import { Route as ConfigRouteImport } from './routes/config'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartelasRoute = CartelasRouteImport.update({
+  id: '/cartelas',
+  path: '/cartelas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigRoute = ConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cartelas': typeof CartelasRoute
+  '/config': typeof ConfigRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cartelas': typeof CartelasRoute
+  '/config': typeof ConfigRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cartelas': typeof CartelasRoute
+  '/config': typeof ConfigRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/cartelas' | '/config'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/cartelas' | '/config'
+  id: '__root__' | '/' | '/cartelas' | '/config'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CartelasRoute: typeof CartelasRoute
+  ConfigRoute: typeof ConfigRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cartelas': {
+      id: '/cartelas'
+      path: '/cartelas'
+      fullPath: '/cartelas'
+      preLoaderRoute: typeof CartelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/config': {
+      id: '/config'
+      path: '/config'
+      fullPath: '/config'
+      preLoaderRoute: typeof ConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CartelasRoute: CartelasRoute,
+  ConfigRoute: ConfigRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

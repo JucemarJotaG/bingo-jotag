@@ -1,0 +1,15 @@
+{
+  "name": "Bingo — Telão Offline",
+  "short_name": "Bingo",
+  "description": "Aplicativo de bingo offline com telão, cartelas e anúncios.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1a1533",
+  "theme_color": "#1a1533",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
