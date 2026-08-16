@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ImagePlus, Plus, Trash2 } from "lucide-react";
 import { AdSlide } from "@/components/AdRotator";
 import { useSettings } from "@/hooks/useBingoStore";
-import { defaultSettings, uid, type Ad, type AdLayout, type BallRange } from "@/lib/bingo";
+import { defaultSettings, uid, type Ad, type AdLayout, type BallRange, type BoardLayout, type DrawMode } from "@/lib/bingo";
 
 export const Route = createFileRoute("/config")({
   head: () => ({

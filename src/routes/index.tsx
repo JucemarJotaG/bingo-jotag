@@ -322,7 +322,7 @@ function Board({
   range: 75 | 90;
   layout: BoardLayout;
   drawnSet: Set<number>;
-  last?: number;
+  last?: number | undefined;
   manual: boolean;
   onToggle: (n: number) => void;
 }) {
