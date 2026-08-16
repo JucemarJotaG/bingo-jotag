@@ -254,26 +254,19 @@ function Telao() {
         </section>
 
         <section className="panel p-4">
-          <div
-            className="grid gap-1.5"
-            style={{ gridTemplateColumns: `repeat(${settings.range === 75 ? 15 : 10}, minmax(0,1fr))` }}
-          >
-            {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
-              const hit = drawnSet.has(n);
-              return (
-                <div
-                  key={n}
-                  className={`font-display flex aspect-square items-center justify-center rounded-lg text-2xl transition-all lg:text-4xl ${
-                    hit
-                      ? "ball-gold scale-105"
-                      : "bg-secondary/60 text-muted-foreground/70"
-                  } ${n === last ? "ring-4 ring-accent" : ""}`}
-                >
-                  {n}
-                </div>
-              );
-            })}
-          </div>
+          <Board
+            range={settings.range}
+            layout={settings.boardLayout}
+            drawnSet={drawnSet}
+            last={last}
+            manual={manual}
+            onToggle={toggle}
+          />
+          {manual && (
+            <p className="mt-3 text-center text-sm text-muted-foreground">
+              Clique no número sorteado externamente para marcá-lo. Clique de novo para desfazer.
+            </p>
+          )}
         </section>
       </main>
 
