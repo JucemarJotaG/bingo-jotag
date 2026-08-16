@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Maximize2,
   Minimize2,
+  MousePointerClick,
   Play,
   RotateCcw,
   Settings as SettingsIcon,
