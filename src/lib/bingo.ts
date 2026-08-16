@@ -54,6 +54,9 @@ export const defaultSettings: Settings = {
   adsAutoplay: true,
   showAdOnDraw: false,
   footer: "Desenvolvido por: Jucemar - Jota G Tecnologia",
+  boardLayout: "cartela",
+  drawMode: "app",
+  ballScale: 1,
   ads: [
     {
       id: "ad-1",
