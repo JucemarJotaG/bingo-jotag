@@ -59,13 +59,14 @@ function Telao() {
   );
 
   const draw = useCallback(() => {
+    if (settings.drawMode === "externo") return;
     const remaining: number[] = [];
     for (let n = 1; n <= total; n++) if (!drawnSet.has(n)) remaining.push(n);
     if (remaining.length === 0) return;
     const n = remaining[Math.floor(Math.random() * remaining.length)]!;
     setGame((g) => ({ ...g, drawn: [...g.drawn, n] }));
     speak(n);
-  }, [total, drawnSet, setGame, speak]);
+  }, [total, drawnSet, setGame, speak, settings.drawMode]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
