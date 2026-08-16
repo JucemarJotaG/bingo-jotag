@@ -20,7 +20,7 @@ export const Route = createFileRoute("/config")({
       },
     ],
   }),
-  component: Config;
+  component: Config,
 });
 
 function readFile(file: File): Promise<string> {
