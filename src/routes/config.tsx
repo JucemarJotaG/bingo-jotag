@@ -112,6 +112,49 @@ function Config() {
         </label>
       </section>
 
+      <section className="panel grid gap-4 p-5 md:grid-cols-2">
+        <h2 className="text-2xl text-primary md:col-span-2">Telão e sorteio</h2>
+        <label className="space-y-1">
+          <span className="text-sm text-muted-foreground">Layout do painel de números</span>
+          <select
+            value={settings.boardLayout}
+            onChange={(e) =>
+              setSettings((s) => ({ ...s, boardLayout: e.target.value as BoardLayout }))
+            }
+            className="field w-full"
+          >
+            <option value="cartela">Estilo cartela (linhas B-I-N-G-O)</option>
+            <option value="grade">Grade compacta</option>
+            <option value="faixas">Faixas de 10 em 10</option>
+          </select>
+        </label>
+        <label className="space-y-1">
+          <span className="text-sm text-muted-foreground">Modo de sorteio</span>
+          <select
+            value={settings.drawMode}
+            onChange={(e) => setSettings((s) => ({ ...s, drawMode: e.target.value as DrawMode }))}
+            className="field w-full"
+          >
+            <option value="app">O app sorteia (botão / tecla espaço)</option>
+            <option value="externo">Sorteio externo (clico no número no telão)</option>
+          </select>
+        </label>
+        <label className="space-y-1 md:col-span-2">
+          <span className="text-sm text-muted-foreground">
+            Tamanho da bola e da letra sorteada: {Math.round(settings.ballScale * 100)}%
+          </span>
+          <input
+            type="range"
+            min={0.7}
+            max={1.8}
+            step={0.05}
+            value={settings.ballScale}
+            onChange={(e) => setSettings((s) => ({ ...s, ballScale: Number(e.target.value) }))}
+            className="w-full"
+          />
+        </label>
+      </section>
+
       <section className="panel space-y-4 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-2xl text-primary">Anúncios e propagandas</h2>
