@@ -2,18 +2,39 @@ export type BallRange = 75 | 90;
 
 export type AdLayout = "full" | "split" | "banner";
 
+export type AdMediaKind = "image" | "video";
+
+export interface AdMedia {
+  id: string;
+  kind: AdMediaKind;
+  /** data URL do arquivo (funciona offline) */
+  src: string;
+  name?: string;
+}
+
 export interface Ad {
   id: string;
   title: string;
   subtitle: string;
+  /** compatibilidade com versões anteriores (imagem única) */
   imageDataUrl?: string;
+  media?: AdMedia[];
   layout: AdLayout;
-  duration: number; // segundos
+  duration: number; // segundos por mídia
   enabled: boolean;
 }
 
 export type BoardLayout = "cartela" | "grade" | "faixas";
 export type DrawMode = "app" | "externo";
+/** Disposição geral do telão */
+export type ScreenLayout = "classico" | "cinema" | "lateral" | "rodape" | "animado";
+
+export interface BottomBar {
+  enabled: boolean;
+  title: string;
+  text: string;
+  imageDataUrl?: string;
+}
 
 export interface Settings {
   bingoName: string;
@@ -26,6 +47,10 @@ export interface Settings {
   ads: Ad[];
   footer: string;
   boardLayout: BoardLayout;
+  screenLayout: ScreenLayout;
+  showCardStatus: boolean;
+  bottomBar: BottomBar;
+  adsSize: number; // 0.6 - 2 (altura relativa da área de anúncios)
   drawMode: DrawMode;
   ballScale: number; // 0.7 - 1.6
 }
@@ -55,21 +80,47 @@ export const defaultSettings: Settings = {
   showAdOnDraw: false,
   footer: "Desenvolvido por: Jucemar - Jota G Tecnologia",
   boardLayout: "cartela",
+  screenLayout: "classico",
+  showCardStatus: true,
+  bottomBar: {
+    enabled: true,
+    title: "1ª Cartela — Bingo cheio",
+    text: "Patrocínio:",
+  },
+  adsSize: 1,
   drawMode: "app",
   ballScale: 1,
-  ads: [
-    {
-      id: "ad-1",
-      title: "Sua empresa aqui",
-      subtitle: "Configure seus anúncios na central de configuração",
-      layout: "split",
-      duration: 8,
-      enabled: true,
-    },
-  ],
+  ads: [],
 };
 
+/** Expande os anúncios ativos em slides (cada imagem/vídeo vira um slide). */
+export interface AdSlideItem {
+  key: string;
+  ad: Ad;
+  media?: AdMedia;
+  duration: number;
+}
+
+export function adSlides(ads: Ad[]): AdSlideItem[] {
+  const out: AdSlideItem[] = [];
+  for (const ad of ads.filter((a) => a.enabled)) {
+    const media: AdMedia[] = ad.media?.length
+      ? ad.media
+      : ad.imageDataUrl
+        ? [{ id: ad.id + "-legacy", kind: "image", src: ad.imageDataUrl }]
+        : [];
+    const duration = Math.max(2, ad.duration || 8);
+    if (media.length === 0) {
+      if (ad.title || ad.subtitle) out.push({ key: ad.id, ad, duration });
+      continue;
+    }
+    media.forEach((m) => out.push({ key: ad.id + "-" + m.id, ad, media: m, duration }));
+  }
+  return out;
+}
+
 export const emptyGame = (): GameState => ({ drawn: [], cards: [], startedAt: Date.now() });
+
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -142,11 +193,17 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return defaultSettings;
-    return { ...defaultSettings, ...(JSON.parse(raw) as Settings) };
+    const parsed = JSON.parse(raw) as Partial<Settings>;
+    return {
+      ...defaultSettings,
+      ...parsed,
+      bottomBar: { ...defaultSettings.bottomBar, ...(parsed.bottomBar ?? {}) },
+    };
   } catch {
     return defaultSettings;
   }
 }
+
 
 export function loadGame(): GameState {
   try {
