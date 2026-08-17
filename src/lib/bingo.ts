@@ -193,11 +193,17 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return defaultSettings;
-    return { ...defaultSettings, ...(JSON.parse(raw) as Settings) };
+    const parsed = JSON.parse(raw) as Partial<Settings>;
+    return {
+      ...defaultSettings,
+      ...parsed,
+      bottomBar: { ...defaultSettings.bottomBar, ...(parsed.bottomBar ?? {}) },
+    };
   } catch {
     return defaultSettings;
   }
 }
+
 
 export function loadGame(): GameState {
   try {
